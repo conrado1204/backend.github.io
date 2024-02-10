@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Real Time Products</title>
+</head>
+<body>
+  <h1>Lista de Productos en Tiempo Real</h1>
+  <ul id="product-list">
+    {{#each products}}
+      <li>{{this.title}} - {{this.price}}</li>
+    {{/each}}
+  </ul>
+
+  <!-- Formulario para agregar un nuevo producto -->
+  <form id="add-product-form">
+    <label for="product-title">Título:</label>
+    <input type="text" id="product-title" name="title" required>
+
+    <label for="product-price">Precio:</label>
+    <input type="number" id="product-price" name="price" required>
+
+    <button type="submit">Agregar Producto</button>
+  </form>
+
+  <!-- Script para manejar eventos de socket y el formulario -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.2.0/socket.io.js"></script>
+  <script>
+    const socket = io();
+
+    // Actualiza la lista de productos en tiempo real
+    socket.on('updateProducts', (products) => {
+      const productList = document.getElementById('product-list');
+      productList.innerHTML = products.map(product => `<li>${product.title} - ${product.price}</li>`).join('');
+    });
+
+    // Maneja el envío del formulario
+    const addProductForm = document.getElementById('add-product-form');
+    addProductForm.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const title = document.getElementById('product-title').value;
+      const price = document.getElementById('product-price').value;
+      socket.emit('addProduct', { title, price });
+    });
+  </script>
+</body>
+</html>
