@@ -1,0 +1,45 @@
+body {
+  background-image: url(https://wallpapercave.com/wp/wp4200186.jpg);
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: right;
+}
+
+/*FORMULARIO INGRESO*/
+section{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+
+.contenedor-product{
+  position: relative;
+  width: 400px;
+  border: 2px solid rgba(255, 255, 255, .6);
+  border-radius: 20px;
+  backdrop-filter: blur(15px);
+  height: 600px;
+  display: grid;
+  place-items: center;
+}
+
+.Titulo {
+  color:azure;
+  font-size: 25px;
+  margin-bottom: 10px;
+  text-align: right;
+}
+
+.controls{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 320px;
+  border-radius: 4px;
+}
+
+.buttons{
+ margin-top: 10px;
+}
+
