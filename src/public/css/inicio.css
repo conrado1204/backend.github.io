@@ -6,9 +6,10 @@ body {
 }
 button {
     margin-top: 50px;
-    background-color: transparent;
+    justify-content: center;
+    background-color: ghostwhite;
     font-weight: bold;
-    color:#ccc;
+    color:grey;
     font-size: 1rem;
     padding: 1rem 1.5rem;
     border: 2px solid transparent;
@@ -18,13 +19,14 @@ button {
     box-shadow: .5rem .5rem 1rem #ccc,
         -.5rem -.5rem 1rem transparent
 }
-button-hover {
+
+.btnIrALogin button-hover {
     box-shadow: .5rem .5rem 1rem transparent,
         -.5rem -.5rem 1rem #ccc
 }
-button:active {
+.btnIrALogin button:active {
     box-shadow: inset .2rem .2rem 1rem transparent,
-    inset -.2rem -.2rem 1rem #ccc
+    inset -.2rem -.2rem 1rem grey
 }
 h1{
     color:ghostwhite;
@@ -33,7 +35,21 @@ h1{
     align-items: center;
     width: 100%;
     margin-top: 10px;
-    font-size: 50px;
+    font-size: 80px;
+}
+h3{
+    color: ghostwhite;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+p{
+    color:ghostwhite;
+    display: flex;
+    justify-content: center;
+    text-align: center;
+    font-size: 1.6rem;
+    margin-top: 40px;
 }
 section{
     display: flex;
@@ -49,8 +65,8 @@ section{
 	align-items: flex-start;
 	border: 2px solid rgba(255, 255, 255, .6);
 	border-radius: 20px;
-	width: 400px;
-	height: 130px;
+	width: 600px;
+	height: 480px;
 	margin: 0 auto;
 	padding: 20px;
 	gap: 10px;

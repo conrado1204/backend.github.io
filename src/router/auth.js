@@ -26,7 +26,7 @@ auth_router.post('/register',
         } catch (error) {
           next(error)
       }
-  })
+})
 
 auth_router.post('/login',
   is_8_char , 
@@ -37,11 +37,16 @@ auth_router.post('/login',
    try {
         req.session.mail = req.body.mail;
         req.session.role = req.user.role;
-    return res.status(200).json({
-        user: req.user,
-        session: req.session,
-        message: req.session.mail + ' inicio sesión',
-        token: req.session.token
+    return res.status(200)
+    .cookie(
+      'token',
+      req.session.token,
+      {maxAge:60*60*24*7*1000, httpOnly:true}
+      ).json({
+          user: req.user,
+          session: req.session,
+          message: req.session.mail + ' inicio sesión',
+          token: req.session.token
     })
 } catch (error) {
     next(error)
@@ -75,10 +80,10 @@ auth_router.post('/login',
 }
 })*/
 
-auth_router.post('/signout', async(req, res, next)=> {
+auth_router.post('/signout', passport.authenticate('jwt'), async(req, res, next)=> {
   try {
       req.session.destroy()
-      return res.status(200).json({
+      return res.status(200).clearCookie('token').json({
         success: true,
         message: 'sesion cerrada',
         dataSession: req.session

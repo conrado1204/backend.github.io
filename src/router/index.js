@@ -5,16 +5,20 @@ import product_mongo_router from "./product.mongo.js";
 import cart_router from "./cart.router.js";
 import cookies_router from "./cookies.js";
 import session_router from "./session.js";
+import userRouter from "./user.router.js";
 
+const user = new userRouter();
+const user_router = user.getRouter();
 
-const indexRouter = Router()
+const indexRouter = Router();
 
 //configurar las rutas de cada recurso
-indexRouter.use('/auth', auth_router)
-indexRouter.use('/products',product_router)
-indexRouter.use('/product_mongo', product_mongo_router)
-indexRouter.use('/carts',cart_router)
-indexRouter.use('/cookies',cookies_router)
-indexRouter.use('/session',session_router)
+indexRouter.use("/auth", auth_router);
+indexRouter.use("/products", product_router);
+indexRouter.use("/product_mongo", product_mongo_router);
+indexRouter.use("/carts", cart_router);
+indexRouter.use("/cookies", cookies_router);
+indexRouter.use("/session", session_router);
+indexRouter.use("/user", user_router);
 
-export default indexRouter
+export default indexRouter;

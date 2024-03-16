@@ -1,4 +1,4 @@
-const nav = document.querySelector('#nav');
+const nav = document.querySelector("#nav");
 const userName = document.querySelector(".userName");
 const socket = io();
 let nameUser = "";
@@ -64,8 +64,8 @@ function showHide() {
     Swal.fire({
       title: "Ingrese su Nombre",
       input: "text",
-      width:'25rem',
-      position: 'top-end',
+      width: "25rem",
+      position: "top-end",
       inputAttributes: {
         autocapitalize: "on",
       },
@@ -83,7 +83,6 @@ function showHide() {
   }
 }
 
-
 /*function showHide() {
   let chat = document.getElementsByClassName("chat")[0];
   if (chat.style.visibility === "hidden") {
@@ -92,7 +91,6 @@ function showHide() {
     chat.style.visibility = "hidden";
   }
 }*/
-
 
 /*function showHide() {
   let chatContainer = document.getElementsByClassName("chat-container")[0];
@@ -121,7 +119,6 @@ function showHide() {
     chatContainer.style.height = "0px";
   }
 }*/
-
 
 /*function showHide(){
   let chat = document.getElementsByClassName("chat")[0];
