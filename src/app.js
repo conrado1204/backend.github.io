@@ -31,11 +31,7 @@ const ready = () => {
 const server = app.listen(PORT, ready);
 const io = new Server(server);
 
-/*app.get('/', async (req,res)=>{
-    res.render('home', {
-        title: "Backend 52250"
-    })
-})*/
+
 app.get("/", (req, res) => {
   res.sendFile(__dirname + "/public/html/inicio.html");
 });

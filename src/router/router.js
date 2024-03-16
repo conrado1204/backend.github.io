@@ -32,7 +32,7 @@ export default class MyRouter {
     return next();
   };
   handlePolicies = (policies) => async (req, res, next) => {
-    // policies es un array con las palabritas que definen las politicas de la empres
+    // policies es un array con las palabritas que definen las politicas de la empresa
     //['PUBLIC', 'ENV', 'DEV', 'ADMIN']
     if (policies.includes("PUBLIC")) {
       return next();

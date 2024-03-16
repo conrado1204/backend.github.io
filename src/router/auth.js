@@ -53,33 +53,6 @@ auth_router.post('/login',
 }
 })
 
-/*auth_router.post('/register', is_form_ok, is_8_char, create_hash, async(req, res, next)=> {
-      try {
-          let one = await User.create(req.body)
-          return res.status(201).json({
-            success: true,
-            message: 'user registered',
-            user_id: one._id
-          })
-      } catch (error) {
-        next(error)
-    }
-})*/
-
-/*auth_router.post('/login', is_8_char , is_valid_user , is_valid_pass, async(req, res, next)=> {
-   try {
-        req.session.mail = req.body.mail
-        let one = await User.findOne({mail:req.body.mail})  //documento de mongo con todas las propiedades del usuario
-        req.session.role = one.role
-    return res.status(200).json({
-        session: req.session,
-        message: req.session.mail + ' inicio sesión'
-    })
-} catch (error) {
-    next(error)
-}
-})*/
-
 auth_router.post('/signout', passport.authenticate('jwt'), async(req, res, next)=> {
   try {
       req.session.destroy()

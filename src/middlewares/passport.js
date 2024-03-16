@@ -41,7 +41,7 @@ export default function () {
           if (!one) {
             return done(null);
           } else {
-            return done(null, one); // le ponga el nobre que le ponga SIEMPREinyecta al objeto de requerimineto una propiedad 'user'de forma que en req.user tengo los datos del usuario encontrado.
+            return done(null, one); // le ponga el nobre que le ponga SIEMPRE inyecta al objeto de requerimineto una propiedad 'user'de forma que en req.user tengo los datos del usuario encontrado.
           }
         } catch (error) {
           return done(error);
