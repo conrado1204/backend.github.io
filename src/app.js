@@ -1,111 +1,153 @@
-import dotenv from "dotenv";
-import express from "express";
-import { engine } from "express-handlebars";
-import { connect } from "mongoose";
-import __dirname from "./utils.js";
-import errorHandler from "./middlewares/errorHandler.js";
-import notFoundHandler from "./middlewares/notFoundHandler.js";
-import indexRouter from "./router/index.js";
-import { Server } from "socket.io";
-import cookieParser from "cookie-parser";
-import expressSession from "express-session";
-import MongoStore from "connect-mongo";
-import morgan from "morgan";
-import inicializedPassport from "./middlewares/passport.js";
-import passport from "passport";
+import express from 'express'
+import handlebars from 'express-handlebars'
+import { Server } from 'socket.io'
+import session from 'express-session'
+import passport from 'passport'
 
-//SERVIDOR
-dotenv.config();
-const app = express();
-const PORT = 8080;
-const ready = () => {
-  console.log("server ready on port " + PORT);
-  connect("mongodb+srv://facundomd:11223344@fmd.cqejc72.mongodb.net/fmd")
-    .then(() => console.log("connected to database"))
-    .catch((error) => console.log(error));
-  //NOTA:
-  //BORRAR DE LA URL LOS PICOS Y LA PALABRA PASSWORD Y REEMPLAZARLA POR LA PASS QUE ELIJA
-  //EL LINK DE CONEXION COPIADO ES DEL CLUSTER!! SI O SI HAY QUE AGREGAR AL FINAL EL NOMBRE DE LA BASE DE DATOS
-  //NO OLVIDA EL NOMBRE DE LA BASE DE DATOS A LA CUAL ME QUIERO CONECTAR LUEGO DE .net/
-};
-const server = app.listen(PORT, ready);
-const io = new Server(server);
+import productsRouter from './routes/products.js'
+import cartsRouter from './routes/carts.js'
+import viewsRouter from './routes/views.js'
+import loginRouter from './routes/login.js'
+import sessionsRouter from './routes/sessions.js'
+import mockingRouter from './routes/mocking.js'
+import loggerRouter from './routes/logger.js'
+import usersRouter from './routes/user.js'
+import mailRouter from './routes/mail.js'
 
+import __dirname from './utils.js'
+import { ProductManager } from './dao/fileSystem/productManager.js'
+import dbConnection from './config/dbConnection.js'
+import chatModel from "./dao/mongo/models/chat.js"
+import { initPassport } from './config/passport.js'
+import errorMid from './middleware/errorMid.js'
+import { addLogger } from './ultis/logger.js'
 
-app.get("/", (req, res) => {
-  res.sendFile(__dirname + "/public/html/inicio.html");
-});
-app.get("/handlebars", (req, res) => {
-  res.render("home.handlebars");
-});
+import swaggerJsDoc from 'swagger-jsdoc'
+import swaggerUiExpress from 'swagger-ui-express'
 
-const message = [];
+const app = express()
+const PORT = 8080
 
-io.on("connection", (socket) => {
-  console.log(`User ${socket.id} connected`);
-  //Nombre del usuario
-  let userName = "";
-  //Mensaje de conexion
-  socket.on("userConnection", (data) => {
-    userName = data.user;
-    message.push({
-      id: socket.id,
-      info: "connection",
-      name: data.user,
-      message: `${data.user} conectado`,
-      date: new Date().toTimeString(),
-    });
-    io.sockets.emit("userConnection", message);
-  });
-  //Mensaje enviado
-  socket.on("userMessage", (data) => {
-    message.push({
-      id: socket.id,
-      info: "message",
-      name: userName,
-      message: data.message,
-      date: new Date().toTimeString(),
-    });
-    io.sockets.emit("userMessage", message);
-  });
-  //Mensage Usuario escribiendo
-  socket.on("typing", (data) => {
-    socket.broadcast.emit("typing", data);
-  });
-});
+dbConnection()
 
-//Static
-app.use(express.static(`${__dirname}/public`));
-app.use("/files", express.static(`${__dirname}/files`));
+const productManager = new ProductManager
 
-// Handlebars
-app.engine("handlebars", engine());
-app.set("views", `${__dirname}/views`);
-app.set("view engine", "handlebars");
+app.use(express.json())
+app.use(express.urlencoded({extended:true}))
 
-//Middlewares
-app.use(cookieParser(process.env.SECRET_COOKIE));
-app.use(
-  expressSession({
-    store: MongoStore.create({
-      //backup por si se cae el servidor
-      mongoUrl: process.env.LINK_DB,
-      ttl: 60 * 60 * 24 * 7,
-    }),
-    secret: process.env.SECRET_SESSION,
-    resave: true,
-    saveUninitialized: true,
-  })
-);
+app.use(session({
+    secret: 'secretCoder',
+    resave: false,
+    saveUninitialized: false
+}))
 
-inicializedPassport();
-app.use(passport.initialize());
-app.use(passport.session());
-app.use(morgan("dev"));
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+initPassport()
+app.use(passport.initialize())
+app.use(passport.session())
 
-//router
-app.use("/api", indexRouter);
-app.use(errorHandler);
-app.use(notFoundHandler);
+app.use(errorMid)
+app.use(addLogger)
+
+app.use('/public' ,express.static(__dirname+'/public'))
+
+app.engine('handlebars', handlebars.engine())
+app.set('views', __dirname+'/views')
+app.set('view engine', 'handlebars')
+
+const swaggerOptions = {
+    definition: {
+        openapi: '3.0.1',
+        info: {
+            title: 'Documentación de Proyecto CoderHouse Comision-32270',
+            description: 'Proyecto desarrollado por Javier Maita'
+        }
+    },
+    apis: [`${__dirname}/docs/**/*.yaml`]
+}
+
+const specs = swaggerJsDoc(swaggerOptions)
+
+app.use('/apidocs', swaggerUiExpress.serve, swaggerUiExpress.setup(specs))
+
+app.use('/', viewsRouter)
+app.use('/auth', loginRouter)
+app.use('/api/products', productsRouter)
+app.use('/api/carts', cartsRouter)
+app.use('/api/sessions', sessionsRouter)
+app.use('/api/users', usersRouter)
+app.use('/api/mail', mailRouter)
+
+app.use('/mockingproducts', mockingRouter)
+app.use('/loggerTest', loggerRouter)
+
+const httpServer = app.listen(PORT, (err)=>{
+    if (err) console.log(err)
+    console.log('Escuchando puerto: ', PORT);
+})
+
+httpServer.on
+
+const socketServer = new Server(httpServer)
+
+let productos
+let mensajes
+
+socketServer.on('connection', async socket => {
+    console.log('Nuevo cliente conectado')
+    try {
+        productos = await productManager.getProducts()
+        mensajes = await chatModel.find()
+        socket.emit('mensajeServer', productos)
+        socket.emit('mensajesChat', mensajes)
+    } catch (error) {
+        console.log(error)
+    }
+
+    socket.on('product', async data => {
+        console.log('data: ', data)
+
+        const   {
+            title,
+            description,
+            code,
+            price,
+            status,
+            stock,
+            category,
+            thumbnail
+        } = data
+
+        if (title == '' || description == '' || code == '' || price == '' || status == '' || stock == '' || category == '') {
+            console.log('todo mal');
+        }else{
+            try {
+                await productManager.addProduct(title, description, price, thumbnail, code, stock, status, category)
+                let datos = await productManager.getProducts()
+                socketServer.emit('productoAgregado', datos)
+            } catch (error) {
+                console.log(error)
+            }
+        }
+    })
+
+    socket.on('deleteProduct', async data => {
+        try {
+            await productManager.deleteProduct(data)
+            let datos = await productManager.getProducts()
+            socketServer.emit('prodcutoEliminado', datos)
+        } catch (error) {
+            console.log(error)
+        }
+    })
+
+    socket.on('msg', async data => {
+        console.log(data);
+        try {
+            await chatModel.insertMany(data)
+            let datos = await chatModel.find()
+            socketServer.emit('newMsg', datos)
+        } catch (error) {
+            console.log(error)
+        }
+    })
+})
