@@ -53,6 +53,32 @@ class UserService {
             console.log(error)
         }
     }
+
+    async uploadDocument(email, data){
+        try {
+            console.log('dataService', data);
+            let user = await mongoUserManager.uploadDocument(email, data)
+            return user
+        } catch (error) {
+            console.log(error)
+        }
+    }
+    
+    async updateLastConnection(email, data){
+        try {
+            let user = await mongoUserManager.updateLastConnection(email, data)
+            return user
+        } catch (error) {
+            console.log(error)
+        }
+    }
+    async deleteUser(email){
+        try {
+            await mongoUserManager.deleteUser(email)
+        } catch (error) {
+            console.log(error)
+        }
+    }
 }
 
 export default UserService

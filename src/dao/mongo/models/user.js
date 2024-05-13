@@ -24,14 +24,26 @@ const userSchema = Schema({
         required: true,
         unique: true
     },
-    cart: {
+    cart:{
         type: Schema.Types.ObjectId,
         ref: 'carts',
         require: true
     },
     password:{
-        type: String,
-        required: true
+        type: String
+    },
+    documents:{
+        type: [{
+            name:{
+                type: String
+            },
+            reference:{
+                type: String
+            }
+        }]
+    },
+    last_connection:{
+        type: String
     }
 })
 

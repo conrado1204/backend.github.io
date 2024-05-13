@@ -72,4 +72,51 @@ export class MongoUserManager{
             console.log(error)
         }
     }
+
+    async uploadDocument(email, data){
+        try {
+            console.log('dataManager', data);
+            let user = await UserModel.updateOne(
+                {
+                    email: email
+                },
+                {
+                    $set:
+                    {
+                        'documents': data
+                    }
+                }
+            )
+            return user
+        } catch (error) {
+            console.log(error)
+        }
+    }
+
+    async updateLastConnection(email, data){
+        try {
+            let user = await UserModel.updateOne(
+                {
+                    email: email
+                },
+                {
+                    $set:
+                    {
+                        'last_connection': data
+                    }
+                }
+            )
+            return user
+        } catch (error) {
+            console.log(error)
+        }
+    }
+
+    async deleteUser(email){
+        try {
+            await UserModel.findOneAndDelete({email: email})
+        } catch (error) {
+            console.log(error)
+        }
+    }
 }

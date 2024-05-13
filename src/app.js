@@ -13,9 +13,11 @@ import mockingRouter from './routes/mocking.js'
 import loggerRouter from './routes/logger.js'
 import usersRouter from './routes/user.js'
 import mailRouter from './routes/mail.js'
+import paymentRouter from './routes/payment.js'
 
 import __dirname from './utils.js'
 import { ProductManager } from './dao/fileSystem/productManager.js'
+import ProductsService from './services/productsService.js'
 import dbConnection from './config/dbConnection.js'
 import chatModel from "./dao/mongo/models/chat.js"
 import { initPassport } from './config/passport.js'
@@ -31,6 +33,7 @@ const PORT = 8080
 dbConnection()
 
 const productManager = new ProductManager
+const productsService = new ProductsService
 
 app.use(express.json())
 app.use(express.urlencoded({extended:true}))
@@ -76,6 +79,7 @@ app.use('/api/carts', cartsRouter)
 app.use('/api/sessions', sessionsRouter)
 app.use('/api/users', usersRouter)
 app.use('/api/mail', mailRouter)
+app.use('/api/payment', paymentRouter)
 
 app.use('/mockingproducts', mockingRouter)
 app.use('/loggerTest', loggerRouter)
@@ -95,7 +99,8 @@ let mensajes
 socketServer.on('connection', async socket => {
     console.log('Nuevo cliente conectado')
     try {
-        productos = await productManager.getProducts()
+        productos = await productsService.getProductsWithOutPaginate()
+        console.log(productos);
         mensajes = await chatModel.find()
         socket.emit('mensajeServer', productos)
         socket.emit('mensajesChat', mensajes)
@@ -111,18 +116,18 @@ socketServer.on('connection', async socket => {
             description,
             code,
             price,
-            status,
             stock,
             category,
-            thumbnail
+            thumbnail,
+            owner
         } = data
 
-        if (title == '' || description == '' || code == '' || price == '' || status == '' || stock == '' || category == '') {
-            console.log('todo mal');
+        if (!title || !description || !code || !price || !stock || !category || !owner) {
+            console.log('datos invalidos')
         }else{
             try {
-                await productManager.addProduct(title, description, price, thumbnail, code, stock, status, category)
-                let datos = await productManager.getProducts()
+                await productsService.addProduct({title, description, price, thumbnail, code, stock, category, owner})
+                let datos = await productsService.getProductsWithOutPaginate()
                 socketServer.emit('productoAgregado', datos)
             } catch (error) {
                 console.log(error)
@@ -132,8 +137,8 @@ socketServer.on('connection', async socket => {
 
     socket.on('deleteProduct', async data => {
         try {
-            await productManager.deleteProduct(data)
-            let datos = await productManager.getProducts()
+            await productsService.deleteProduct(data)
+            let datos = await productsService.getProductsWithOutPaginate()
             socketServer.emit('prodcutoEliminado', datos)
         } catch (error) {
             console.log(error)

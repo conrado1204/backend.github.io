@@ -1,5 +1,9 @@
 import { request } from "express";
 import config  from '../config/env.js'
+import UserService from "../services/userService.js";
+import moment from 'moment';
+
+const userService = new UserService
 class LoginController {
     loginRender = (req = request, res)=>{
         res.render('login')
@@ -17,29 +21,45 @@ class LoginController {
         res.send({status: 'error', message: 'fallo el registro'})
     }
 
-    loginVoid = (req = request, res)=>{
+    loginVoid = async (req = request, res)=>{
         const { username, password } = req.body
 
         try {
             
             if (username !== config.adminName || password !== config.adminPassword) {
+                let user = await userService.getUser(username)
                 req.session.user = username
                 req.session.email = username
-                req.session.admin = false
-                req.session.premium = false
-                req.session.usuario = true
-                req.logger.info('usted es usuario')
-                // console.log('usted es usuario')
-                res.send({status: 'ok'}).redirect('http://localhost:8080/products')
+                if (user.roll == 'admin') {
+                    req.session.admin = true
+                    req.session.premium = false
+                    req.session.usuario = false
+                }
+                if (user.roll == 'premium') {
+                    req.session.admin = false
+                    req.session.premium = true
+                    req.session.usuario = false
+                }
+                if (user.roll == 'user') {
+                    req.session.admin = false
+                    req.session.premium = false
+                    req.session.usuario = true
+                }
+                let last_connection = moment().format("YYYY MM DD");
+                req.logger.info("last_connection: ", last_connection);
+                await userService.updateLastConnection(username, last_connection.toString())
+                res.redirect('http://localhost:8080/products')
             } else {
                 req.session.user = username
                 req.session.email = username
                 req.session.admin = true
                 req.session.premium = false
                 req.session.usuario = false
-                req.logger.info('usted es admin')
-                // console.log('usted es admin')
-                res.send({status: 'ok'}).redirect('http://localhost:8080/products')
+                req.logger.warning('usted es admin')
+                let last_connection = moment().format("YYYY MM DD");
+                req.logger.info("last_connection: ", last_connection);
+                await userService.updateLastConnection(username, last_connection.toString())
+                res.redirect('http://localhost:8080/products')
             }
         } catch (error) {
             console.log(error)
@@ -50,7 +70,7 @@ class LoginController {
         try {
             res.redirect('http://localhost:8080/auth/login')
         } catch (error) {
-            console.log(error)
+            req.logger.error(error)
         }
     }
 
@@ -61,19 +81,25 @@ class LoginController {
                 else res.send({status:'Logout error', message: err})
             })
         } catch (error) {
-            console.log(error)
+            req.logger.error(error)
         }
     }
 
-    githubcallback = (req = request, res)=>{
-        req.logger.info('req: ',req.user)
-        // console.log('req: ',req.user)
-        req.session.user = req.user.first_name
-        req.session.email = req.user.email
-        req.session.admin = false
-        req.session.premium = false
-        req.session.usuario = true
-        res.redirect('http://localhost:8080/products')
+    githubcallback = async (req = request, res)=>{
+        try {
+            req.logger.info(req.user)
+            req.session.user = req.user.first_name
+            req.session.email = req.user.email
+            req.session.admin = false
+            req.session.premium = false
+            req.session.usuario = true
+            let last_connection = moment().format("YYYY MM DD");
+            req.logger.info(`last_connection: ${last_connection}`);
+            await userService.updateLastConnection(req.user.email, last_connection.toString())
+            res.redirect('http://localhost:8080/products')
+        } catch (error) {
+            req.logger.error(error)
+        }
     }
 }
 
