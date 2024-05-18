@@ -43,14 +43,13 @@ export const initPassport = ()=>{
             let user = await userService.getUser({email: profile._json.email})
             console.log(profile._json.email);
             if (!user) {
-                let cart = await mongoCartManager.createCart()
                 let newUser = {
                     first_name: profile.username,
                     last_name: profile.username,
                     age: 18,
                     roll: 'user',
                     email: profile._json.email,
-                    cart: cart._id
+                    password: '1234'
                 }
                 let result= await userService.addUser(newUser)
                 return done(null, result)
@@ -69,16 +68,20 @@ export const initPassport = ()=>{
         },
         async (req, username, password, done) => {
             req.logger.info('login passport')
+            // console.log('login passport')
             try {
                 let user = await mongoUserManager.getUser(username)
                 req.logger.info(user)
+                // console.log(user)
                 if (!user) {
                     req.logger.error('usuario no existe')
+                    // console.log('usuario no existe')
                     return done(null, false)
                 }
 
                 if(!isValidPassword(user, password)){
-                    console.log('datos invalidos')
+                    req.logger.error('datos invalidos')
+                    // console.log('datos invalidos')
                     return done(null, false)
                 }
                 return done(null, user)
@@ -95,16 +98,16 @@ export const initPassport = ()=>{
             usernameField: 'email',
         },
         async (req, username, password, done)=>{
-            let { first_name, last_name, age, roll = 'user', email } = req.body
-            req.logger.info('username: ',username);
-            req.logger.info('password: ',password);
+            const { first_name, last_name, age, roll = 'user', email } = req.body
+            console.log('username: ',username);
+            console.log('password: ',password);
             if (username == config.adminName && password == config.adminPassword) roll = 'admin'
             try {
                 
                 let exist = await mongoUserManager.getUser(username)
                 
                 if(exist) {
-                    req.logger.warning('el usuario ya existe')
+                    console.log('el usuario ya existe')
                     return done(null, false)
                 }else{
                     let cart = await mongoCartManager.createCart()
@@ -113,11 +116,11 @@ export const initPassport = ()=>{
 
                     let result = await mongoUserManager.addUser(user)
                     
-                    req.logger.info('el usuario se creo correctamente: ', result)
+                    console.log('el usuario se creo correctamente: ', result)
                     return done(null, result)
                 }
             } catch (error) {
-                req.logger.error(error)
+                console.log(error)
                 return done('Error al obrener el usuario'+error)
             }
         }

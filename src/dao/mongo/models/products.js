@@ -22,8 +22,7 @@ const productsSchema = Schema({
     },
     status: {
         type: String,
-        required: true,
-        default: 'true'
+        required: true
     },
     stock: {
         type: Number,

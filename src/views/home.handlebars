@@ -5,10 +5,6 @@
         <form action="../auth/logout" method="post">
             <button id="logout" class="btnInverted">Cerrar sesion</button>
         </form>
-
-        <form action="../carts/{{cart}}" method="get">
-            <button id="logout" class="btnInverted">Carrito</button>
-        </form>
     </div>
 
     <div class="titleContainer">
@@ -18,17 +14,16 @@
     <div class="productsContainer">
         {{#each productos}}
             <div class="card">
-                <img src="{{this.thumbnail}}" alt="producto" height="150px">
+                <img src="/public/media/kennyProduct.png" alt="producto" height="150px">
                 <div class="dataContainer">
                     <h3>{{this.title}}</h3>
                     <div class="description">
                         <p>{{this.description}}</p>
                         <p>Categoria: {{this.category}}</p>
                         <p>Stock: {{this.stock}}</p>
-                        <p>${{this.price}}</p>
                     </div>
                 </div>
-                <form action="../api/carts/{{cart}}/product/{{this._id}}" method="post">
+                <form action="../api/carts/64027d4a017df9efaa98fee8/product/{{this._id}}" method="post">
                     <button type="submit">agragar al carrito</button>
                 </form>
             </div>

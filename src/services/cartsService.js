@@ -7,10 +7,6 @@ class CartsService {
         return await mongoCartManager.createCart()
     }
 
-    async getAllCartProducts(cid){
-        return await mongoCartManager.getAllCartProducts(cid)
-    }
-
     async getCartProducts(cid, limit, page){
         return await mongoCartManager.getCartProducts(cid, limit, page)
     }

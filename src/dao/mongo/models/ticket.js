@@ -3,9 +3,12 @@ import { Schema, model } from "mongoose";
 const ticketCollection = 'tickets'
 
 const ticketSchema = new  Schema({
+    code: {
+        type: Number,
+        default: 5
+    },
     purchase_datetime: {
-        type:  String,
-        required: true
+        type:  String
     },
     amount:{
         type: Number,

@@ -1,3 +1,6 @@
 let boton = document.querySelector('#btn')
-let emailInput = document.querySelector('#email')
-let passwordInput = document.querySelector('#password')
+
+boton.addEventListener('click', (event)=>{
+    event.preventDefault
+    location.href = 'http://localhost:8080/products'
+})

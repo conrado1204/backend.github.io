@@ -16,9 +16,12 @@ export class MongoCartManager {
             let carrito = await cartsModel.findOne({_id: cid})
             
             let product = carrito.products.find(product => product.pid == pid)
+            // console.log(cid)
+            // console.log(carrito)
+            // console.log(product)
     
             if (product !== undefined) {
-                await cartsModel.updateOne(
+                return await cartsModel.updateOne(
                     {
                         _id: cid
                     },
@@ -35,22 +38,11 @@ export class MongoCartManager {
                         ]
                     }
                 )
-                return await cartsModel.find({_id: cid})
             }
     
             if (product == undefined) {
-                await cartsModel.findByIdAndUpdate(cid, {$push: {'products': {pid: pid, quantity : 1}}})
-                return await cartsModel.find({_id: cid})
+                return await cartsModel.findByIdAndUpdate(cid, {$push: {'products': {pid: pid, quantity : 1}}})
             }
-        } catch (error) {
-            console.log(error)
-        }
-    }
-
-    async getAllCartProducts(cid){
-        try {
-            const cartProducts = await cartsModel.find({_id: cid})
-            return cartProducts
         } catch (error) {
             console.log(error)
         }
@@ -59,6 +51,7 @@ export class MongoCartManager {
     async getCartProducts(cid, limit, page){
         try {
             const cartProducts = await cartsModel.paginate({_id: cid}, {limit: limit, page: page, lean: true})
+            // console.log(cartProducts)
             return cartProducts
         } catch (error) {
             console.log(error)
@@ -67,17 +60,17 @@ export class MongoCartManager {
 
     async deleteProduct(cid, pid){
         try {
-            console.log(`cid: ${cid}, pid: ${pid}`)
-            let carrito = await cartsModel.findOne({_id: cid})
+            let carrito = await cartsModel.findOne({cid: cid})
     
             let products = carrito.products.filter(product => product.pid != pid)
 
-            console.log('carrito: ', carrito)
-            console.log('products: ', products)
+            console.log(products)
 
-            await cartsModel.updateOne(
+            // await cartsModel.findByIdAndUpdate(cid, products)
+
+            return await cartsModel.updateOne(
                 {
-                    _id: cid
+                    cid: cid
                 },
                 {
                     $set:
@@ -86,8 +79,6 @@ export class MongoCartManager {
                     }
                 }
             )
-
-            return await cartsModel.find({_id: cid})
         } catch (error) {
             console.log(error)
         }

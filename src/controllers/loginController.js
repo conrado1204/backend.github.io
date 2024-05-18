@@ -1,7 +1,6 @@
 import { request } from "express";
 import config  from '../config/env.js'
 import UserService from "../services/userService.js";
-import moment from 'moment';
 
 const userService = new UserService
 class LoginController {
@@ -27,27 +26,15 @@ class LoginController {
         try {
             
             if (username !== config.adminName || password !== config.adminPassword) {
-                let user = await userService.getUser(username)
                 req.session.user = username
                 req.session.email = username
-                if (user.roll == 'admin') {
-                    req.session.admin = true
-                    req.session.premium = false
-                    req.session.usuario = false
-                }
-                if (user.roll == 'premium') {
-                    req.session.admin = false
-                    req.session.premium = true
-                    req.session.usuario = false
-                }
-                if (user.roll == 'user') {
-                    req.session.admin = false
-                    req.session.premium = false
-                    req.session.usuario = true
-                }
-                let last_connection = moment().format("YYYY MM DD");
-                req.logger.info("last_connection: ", last_connection);
-                await userService.updateLastConnection(username, last_connection.toString())
+                req.session.admin = false
+                req.session.premium = false
+                req.session.usuario = true
+                req.logger.info('usted es usuario')
+                // console.log('usted es usuario')
+                let last_connection = new Date()
+                await userService.updateLastConnection(username, last_connection)
                 res.redirect('http://localhost:8080/products')
             } else {
                 req.session.user = username
@@ -55,10 +42,10 @@ class LoginController {
                 req.session.admin = true
                 req.session.premium = false
                 req.session.usuario = false
-                req.logger.warning('usted es admin')
-                let last_connection = moment().format("YYYY MM DD");
-                req.logger.info("last_connection: ", last_connection);
-                await userService.updateLastConnection(username, last_connection.toString())
+                req.logger.info('usted es admin')
+                // console.log('usted es admin')
+                let last_connection = new Date()
+                await userService.updateLastConnection(username, last_connection)
                 res.redirect('http://localhost:8080/products')
             }
         } catch (error) {
@@ -70,7 +57,7 @@ class LoginController {
         try {
             res.redirect('http://localhost:8080/auth/login')
         } catch (error) {
-            req.logger.error(error)
+            console.log(error)
         }
     }
 
@@ -81,25 +68,19 @@ class LoginController {
                 else res.send({status:'Logout error', message: err})
             })
         } catch (error) {
-            req.logger.error(error)
+            console.log(error)
         }
     }
 
-    githubcallback = async (req = request, res)=>{
-        try {
-            req.logger.info(req.user)
-            req.session.user = req.user.first_name
-            req.session.email = req.user.email
-            req.session.admin = false
-            req.session.premium = false
-            req.session.usuario = true
-            let last_connection = moment().format("YYYY MM DD");
-            req.logger.info(`last_connection: ${last_connection}`);
-            await userService.updateLastConnection(req.user.email, last_connection.toString())
-            res.redirect('http://localhost:8080/products')
-        } catch (error) {
-            req.logger.error(error)
-        }
+    githubcallback = (req = request, res)=>{
+        req.logger.info('req: ',req.user)
+        // console.log('req: ',req.user)
+        req.session.user = req.user.first_name
+        req.session.email = req.user.email
+        req.session.admin = false
+        req.session.premium = false
+        req.session.usuario = true
+        res.redirect('http://localhost:8080/products')
     }
 }
 

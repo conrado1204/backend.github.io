@@ -15,6 +15,4 @@ router.get('/realtimeproducts', viewsController.realTimeProductsRender)
 
 router.get('/chat',rollUserVerify , viewsController.chat)
 
-router.get('/userMonitoring', rollAdminVerify, viewsController.userMonitoring)
-
 export default router
