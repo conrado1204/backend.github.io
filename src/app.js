@@ -1,154 +1,136 @@
-import express from 'express'
-import handlebars from 'express-handlebars'
-import { Server } from 'socket.io'
-import session from 'express-session'
-import passport from 'passport'
+import express from "express";
+import cors from "cors";
+import handlebars from "express-handlebars";
+import { Server } from "socket.io";
 
-import productsRouter from './routes/products.js'
-import cartsRouter from './routes/carts.js'
-import viewsRouter from './routes/views.js'
-import loginRouter from './routes/login.js'
-import sessionsRouter from './routes/sessions.js'
-import mockingRouter from './routes/mocking.js'
-import loggerRouter from './routes/logger.js'
-import usersRouter from './routes/user.js'
-import mailRouter from './routes/mail.js'
+import productsRouter from "./routes/products.router.js";
+import cartsRouter from "./routes/carts.router.js";
+import usersRouter from "./routes/users.router.js";
+import ticketsRouter from "./routes/ticket.router.js";
+import mailingRouter from "./routes/mailing.router.js";
+import mockingProducts from "./routes/mockingProducts.router.js";
+import loggerTest from "./routes/loggerTest.js";
+import viewsRouter from "./routes/views.router.js";
+import sessionsRouter from "./routes/sessions.router.js";
+import paymentsRouter from "./routes/payments.router.js";
+import mercadopagoRouter from "./routes/mercadopago.router.js";
 
-import __dirname from './utils.js'
-import { ProductManager } from './dao/fileSystem/productManager.js'
-import dbConnection from './config/dbConnection.js'
-import chatModel from "./dao/mongo/models/chat.js"
-import { initPassport } from './config/passport.js'
-import errorMid from './middleware/errorMid.js'
-import { addLogger } from './ultis/logger.js'
+import __dirname from "./utils.js";
+import mongoose from "mongoose";
+import session from "express-session";
+import MongoStore from "connect-mongo";
+import initPassport from "./config/passport.config.js";
+import passport from "passport";
+import cookieParser from "cookie-parser";
+import config from "./config/config.js";
+import { addLogger, logger } from "./config/logger.js";
 
-import swaggerJsDoc from 'swagger-jsdoc'
-import swaggerUiExpress from 'swagger-ui-express'
+import swaggerJSDoc from "swagger-jsdoc";
+import swaggerUiExpress from "swagger-ui-express";
 
-const app = express()
-const PORT = 8080
+const app = express();
 
-dbConnection()
+//Data for post JSON
+app.use(express.json());
+app.use("/static", express.static(__dirname + "/public"));
+app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
+app.use(addLogger);
 
-const productManager = new ProductManager
+app.use(
+  cors({
+    origin: [
+      "https://fundacion-nave.netlify.app",
+      "https://navefundacion.com.ar",
+      "https://www.navefundacion.com.ar",
+      "https://brujulaportfolio.netlify.app",
+      "http://127.0.0.1:5173",
+      "http://localhost:5173",
+    ],
+    methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+  })
+);
 
-app.use(express.json())
-app.use(express.urlencoded({extended:true}))
+//Handlebars
+app.engine("handlebars", handlebars.engine());
+app.set("views", __dirname + "/views");
+app.set("view engine", "handlebars");
 
-app.use(session({
-    secret: 'secretCoder',
-    resave: false,
-    saveUninitialized: false
-}))
+//Mongo session
+app.use(
+  session({
+    store: MongoStore.create({
+      mongoUrl: config.dbURL,
+      dbName: config.dbName,
+      mongoOptions: {
+        useNewUrlParser: true,
+        useUnifiedTopology: true,
+      },
+      ttl: 60 * 60 * 10000,
+    }),
+    secret: "mysecret",
+    resave: true,
+    saveUninitialized: true,
+  })
+);
 
-initPassport()
-app.use(passport.initialize())
-app.use(passport.session())
-
-app.use(errorMid)
-app.use(addLogger)
-
-app.use('/public' ,express.static(__dirname+'/public'))
-
-app.engine('handlebars', handlebars.engine())
-app.set('views', __dirname+'/views')
-app.set('view engine', 'handlebars')
-
+//Documentacion
 const swaggerOptions = {
-    definition: {
-        openapi: '3.0.1',
-        info: {
-            title: 'Documentación de Proyecto CoderHouse Comision-32270',
-            description: 'Proyecto desarrollado por Javier Maita'
-        }
+  definition: {
+    openapi: "3.0.1",
+    info: {
+      title: "Documentacion de Ecommerce Bikininfa",
+      description: "Este proyecto es un Ecommerce de bikinis",
     },
-    apis: [`${__dirname}/docs/**/*.yaml`]
-}
+  },
+  apis: [`${__dirname}/docs/**/*.yaml`],
+};
+const specs = swaggerJSDoc(swaggerOptions);
 
-const specs = swaggerJsDoc(swaggerOptions)
+//Passport
+initPassport();
+app.use(passport.initialize());
+app.use(passport.session());
 
-app.use('/apidocs', swaggerUiExpress.serve, swaggerUiExpress.setup(specs))
+//Rutas
+app.use("/", loggerTest);
+app.use("/", viewsRouter);
+app.use("/", mailingRouter);
+app.use("/api", mockingProducts);
+app.use("/api", productsRouter);
+app.use("/api", cartsRouter);
+app.use("/api", usersRouter);
+app.use("/api", ticketsRouter);
+app.use("/", mercadopagoRouter);
+app.use("/api/payments", paymentsRouter);
+app.use("/api/sessions", sessionsRouter);
 
-app.use('/', viewsRouter)
-app.use('/auth', loginRouter)
-app.use('/api/products', productsRouter)
-app.use('/api/carts', cartsRouter)
-app.use('/api/sessions', sessionsRouter)
-app.use('/api/users', usersRouter)
-app.use('/api/mail', mailRouter)
+//swagger
+app.use("/apidocs", swaggerUiExpress.serve, swaggerUiExpress.setup(specs));
 
-app.use('/mockingproducts', mockingRouter)
-app.use('/loggerTest', loggerRouter)
+mongoose.set("strictQuery", false);
 
-const httpServer = app.listen(PORT, (err)=>{
-    if (err) console.log(err)
-    console.log('Escuchando puerto: ', PORT);
-})
+mongoose
+  .connect(config.dbURL, { dbName: config.dbName })
+  .then(() => {
+    logger.info("DB conectada");
+    const httpServer = app.listen(config.port, () =>
+      logger.http("Listening...")
+    );
+    const io = new Server(httpServer);
+    let messages = [];
 
-httpServer.on
+    io.on("connection", (socket) => {
+      socket.on("new", (user) =>
+        logger.info(`${user} se acaba de conectar al chat`)
+      );
 
-const socketServer = new Server(httpServer)
-
-let productos
-let mensajes
-
-socketServer.on('connection', async socket => {
-    console.log('Nuevo cliente conectado')
-    try {
-        productos = await productManager.getProducts()
-        mensajes = await chatModel.find()
-        socket.emit('mensajeServer', productos)
-        socket.emit('mensajesChat', mensajes)
-    } catch (error) {
-        console.log(error)
-    }
-
-    socket.on('product', async data => {
-        console.log('data: ', data)
-
-        const   {
-            title,
-            description,
-            code,
-            price,
-            status,
-            stock,
-            category,
-            thumbnail
-        } = data
-
-        if (title == '' || description == '' || code == '' || price == '' || status == '' || stock == '' || category == '') {
-            console.log('todo mal');
-        }else{
-            try {
-                await productManager.addProduct(title, description, price, thumbnail, code, stock, status, category)
-                let datos = await productManager.getProducts()
-                socketServer.emit('productoAgregado', datos)
-            } catch (error) {
-                console.log(error)
-            }
-        }
-    })
-
-    socket.on('deleteProduct', async data => {
-        try {
-            await productManager.deleteProduct(data)
-            let datos = await productManager.getProducts()
-            socketServer.emit('prodcutoEliminado', datos)
-        } catch (error) {
-            console.log(error)
-        }
-    })
-
-    socket.on('msg', async data => {
-        console.log(data);
-        try {
-            await chatModel.insertMany(data)
-            let datos = await chatModel.find()
-            socketServer.emit('newMsg', datos)
-        } catch (error) {
-            console.log(error)
-        }
-    })
-})
-
+      socket.on("message", (data) => {
+        messages.push(data);
+        io.emit("logs", messages);
+      });
+    });
+  })
+  .catch((e) => {
+    logger.falal("Error al conectar la DB");
+  });

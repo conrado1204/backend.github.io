@@ -1,27 +1,50 @@
-<div class="background">
-    <div class="formContainer">
-        <h2>Registarte</h2>
+<form
+  class="displayColumn contain_input"
+  action="/api/sessions/register"
+  method="post"
+>
+  <h2>Registrarme</h2>
 
-        <form action="register" method="post" class="form">
+  <input
+    id="first_name"
+    type="text"
+    name="first_name"
+    placeholder="Nombre"
+    class="style_input"
+  />
 
-            <p class="text">Nombre</p>
-            <input type="text" name="first_name" id="email" class="input" placeholder="Tu nombre">
+  <input
+    id="last_name"
+    type="text"
+    name="last_name"
+    placeholder="Apellido"
+    class="style_input"
+  />
 
-            <p class="text">Apellido</p>
-            <input type="text" name="last_name" id="email" class="input" placeholder="Tu apellido">
+  <input
+    id="age"
+    type="number"
+    name="age"
+    placeholder="Edad"
+    min="0"
+    class="style_input"
+  />
 
-            <p class="text">Edad</p>
-            <input type="text" name="age" id="email" class="input" placeholder="18">
+  <input
+    id="email"
+    type="text"
+    name="email"
+    placeholder="Email"
+    class="style_input"
+  />
 
-            <p class="text">Email</p>
-            <input type="text" name="email" id="email" class="input" placeholder="user@gmail.com">
+  <input
+    id="password"
+    type="password"
+    name="password"
+    placeholder="Contraseña"
+    class="style_input"
+  />
 
-            <p class="text">Password</p>
-            <input type="text" name="password" id="password" class="input" placeholder="************">
-
-            <button type="submit" id="btn" class="btn">Registrarse</button>
-        </form>
-    </div>
-</div>
-
-<script src="/public/js/login.js"></script>
+  <button class="btn-session" type="submit">Enviar</button>
+</form>

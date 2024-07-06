@@ -1,44 +1,38 @@
-<div>
-    <div class="header">
-        <h2>Bienvenido {{username}}</h2>
+<div class="fondo-home">
 
-        <form action="../auth/logout" method="post">
-            <button id="logout" class="btnInverted">Cerrar sesion</button>
-        </form>
+  <div id="carouselExampleFade" class="carousel slide carousel-fade">
+    <div class="carousel-inner">
+      <div class="carousel-item d-flex justify-content-center align-items-center active">
+        <img src="/static/img/carrousel1.png" class="d-block" />
+      </div>
+      <div class="carousel-item d-flex justify-content-center align-items-center">
+        <img src="/static/img/carrousel2.png" class="d-block" />
+      </div>
+      <div class="carousel-item d-flex justify-content-center align-items-center">
+        <img src="/static/img/carrousel3.png" class="d-block" />
+      </div>
+      <div class="carousel-item d-flex justify-content-center align-items-center">
+        <img src="/static/img/carrousel4.png" class="d-block" />
+      </div>
     </div>
+    <button
+      class="carousel-control-prev"
+      type="button"
+      data-bs-target="#carouselExampleFade"
+      data-bs-slide="prev"
+    >
+      <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+      <span class="visually-hidden">Previous</span>
+    </button>
+    <button
+      class="carousel-control-next"
+      type="button"
+      data-bs-target="#carouselExampleFade"
+      data-bs-slide="next"
+    >
+      <span class="carousel-control-next-icon" aria-hidden="true"></span>
+      <span class="visually-hidden">Next</span>
+    </button>
+  </div>
 
-    <div class="titleContainer">
-        <h2>Todos los Productos</h2>
-    </div>
-    
-    <div class="productsContainer">
-        {{#each productos}}
-            <div class="card">
-                <img src="/public/media/kennyProduct.png" alt="producto" height="150px">
-                <div class="dataContainer">
-                    <h3>{{this.title}}</h3>
-                    <div class="description">
-                        <p>{{this.description}}</p>
-                        <p>Categoria: {{this.category}}</p>
-                        <p>Stock: {{this.stock}}</p>
-                    </div>
-                </div>
-                <form action="../api/carts/64027d4a017df9efaa98fee8/product/{{this._id}}" method="post">
-                    <button type="submit">agragar al carrito</button>
-                </form>
-            </div>
-        {{/each}}
-    </div>
-
-    <div class="pagination">
-        {{#if hasPrevPage}}
-            <a href="/products?page={{prevPage}}&&limit={{limit}}" class="center"><button>Anterior</button></a>
-        {{/if}}
-        <p class="page">{{page}}</p>
-        {{#if hasNextPage}}
-            <a href="/products?page={{nextPage}}&&limit={{limit}}" class="center"><button>Siguiente</button></a>
-        {{/if}}
-    </div>
 </div>
-
-<script src="/public/js/home.js"></script>
